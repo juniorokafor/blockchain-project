@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Return Ticket — Ticketing DApp</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <nav>
+        <span class="brand"><a href="index.html" style="color: white; text-decoration: none;">🎟 Ticketing DApp</a></span>
+        <a href="create-wallet.html">Create Wallet</a>
+        <a href="balance.html">Check Balance</a>
+        <a href="buy-ticket.html">Buy Ticket</a>
+        <a href="transfer.html">Return Ticket</a>
+    </nav>
+    <main>
+        <div class="card">
+            <h1>Return a Ticket</h1>
+            <p>Transfer a ticket token back to the vendor.</p>
+
+            <label for="privateKey">Your Private Key</label>
+            <input type="password" id="privateKey" placeholder="0x...">
+
+            <label for="amount">Number of Tickets to Return</label>
+            <input type="number" id="amount" value="1" min="1">
+
+            <button id="returnBtn">Return Ticket(s)</button>
+
+            <div id="status" class="output hidden"></div>
+            <div id="success" class="success hidden"></div>
+            <div id="error" class="error hidden"></div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/transfer.js"></script>
+</body>
+</html>

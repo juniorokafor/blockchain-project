@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create Wallet — Ticketing DApp</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <nav>
+        <span class="brand"><a href="index.html" style="color: white; text-decoration: none;">🎟 Ticketing DApp</a></span>
+        <a href="create-wallet.html">Create Wallet</a>
+        <a href="balance.html">Check Balance</a>
+        <a href="buy-ticket.html">Buy Ticket</a>
+        <a href="transfer.html">Return Ticket</a>
+    </nav>
+    <main>
+        <div class="card">
+            <h1>Create a Wallet</h1>
+            <p>Generate a new Ethereum wallet for use on the Sepolia testnet.</p>
+
+            <div class="warning">
+                <strong>Testnet only.</strong> The wallet file contains an unencrypted private key. Do not use this address for real funds on mainnet.
+            </div>
+
+            <button id="createBtn">Generate New Wallet</button>
+
+            <div id="walletDetails" class="output hidden">
+                <div class="field-row">
+                    <div class="label">Address</div>
+                    <div class="value" id="walletAddress"></div>
+                </div>
+                <div class="field-row">
+                    <div class="label">Private Key</div>
+                    <div class="value" id="walletPrivateKey"></div>
+                </div>
+                <button id="downloadBtn" class="secondary">Download Wallet</button>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/wallet.js"></script>
+</body>
+</html>

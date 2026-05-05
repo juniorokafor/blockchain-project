@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Buy Ticket — Ticketing DApp</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <nav>
+        <span class="brand"><a href="index.html" style="color: white; text-decoration: none;">🎟 Ticketing DApp</a></span>
+        <a href="create-wallet.html">Create Wallet</a>
+        <a href="balance.html">Check Balance</a>
+        <a href="buy-ticket.html">Buy Ticket</a>
+        <a href="transfer.html">Return Ticket</a>
+    </nav>
+    <main>
+        <div class="card">
+            <h1>Buy a Ticket</h1>
+            <p>Purchase a ticket token by sending SETH to the smart contract.</p>
+
+            <div id="priceInfo" class="output">
+                <div class="field-row">
+                    <div class="label">Price per Ticket</div>
+                    <div class="value" id="ticketPriceDisplay">Loading...</div>
+                </div>
+                <div class="field-row">
+                    <div class="label">Tickets Available</div>
+                    <div class="value" id="availableTickets">Loading...</div>
+                </div>
+            </div>
+
+            <label for="privateKey">Your Private Key</label>
+            <input type="password" id="privateKey" placeholder="0x...">
+
+            <label for="amount">Number of Tickets</label>
+            <input type="number" id="amount" value="1" min="1">
+
+            <button id="buyBtn">Buy Ticket(s)</button>
+
+            <div id="status" class="output hidden"></div>
+            <div id="success" class="success hidden"></div>
+            <div id="error" class="error hidden"></div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/buy.js"></script>
+</body>
+</html>

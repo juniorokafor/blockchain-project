@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ticketing DApp</title>
+    <link rel="stylesheet" href="./createWallet/createWallet.css">
+</head>
+<body>
+    <h1>Blockchain Ticketing DApp</h1>
+    <p>A decentralised ticketing system built on the Ethereum Sepolia testnet, using an ERC-20 smart contract to issue tickets as tokens.</p>
+
+    <h3>Features</h3>
+    <div class="nav-grid">
+        <a href="./createWallet/index.html" class="nav-card">
+            <span class="nav-title">Create Wallet</span>
+            <span class="nav-desc">Generate a new encrypted wallet (V3 keystore)</span>
+        </a>
+        <a href="./checkBalance/index.html" class="nav-card">
+            <span class="nav-title">Check Balance</span>
+            <span class="nav-desc">Look up SETH and ticket balance for any address</span>
+        </a>
+        <a href="./buyTicket/index.html" class="nav-card">
+            <span class="nav-title">Buy Ticket</span>
+            <span class="nav-desc">Purchase a ticket token using SETH</span>
+        </a>
+        <a href="./returnTicket/index.html" class="nav-card">
+            <span class="nav-title">Return Ticket</span>
+            <span class="nav-desc">Transfer a ticket back to the vendor for a refund</span>
+        </a>
+    </div>
+
+    <h3>How to use</h3>
+    <ol>
+        <li>Create a wallet (with a password for encryption) and download the keystore JSON.</li>
+        <li>Get free SETH from a Sepolia faucet (e.g. sepoliafaucet.com).</li>
+        <li>Buy a ticket — load your keystore + password, then send SETH to the contract.</li>
+        <li>Verify or return your ticket — the doorman can check your balance, or you can return it back to the vendor.</li>
+    </ol>
+
+    <h3>Network</h3>
+    <p>
+        Network: Sepolia testnet<br/>
+        RPC: <code>https://rpc.sepolia.org</code><br/>
+        Block explorer: <a href="https://sepolia.etherscan.io" target="_blank">sepolia.etherscan.io</a>
+    </p>
+</body>
+</html>

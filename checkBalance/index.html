@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Include the Web3 library -->
+    <script src="https://cdn.jsdelivr.net/gh/ethereum/web3.js/dist/web3.min.js"></script>
+    <!-- Include the jQuery library -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <!-- Include your CSS file -->
+    <link rel="stylesheet" href="./checkBalance.css">
+    <title>Check Balance</title>
+</head>
+<body>
+    <p><a href="../index.html">&larr; Home</a></p>
+
+    <h1>Check Balance</h1>
+    <p>Look up the SETH (Sepolia ETH) and ticket token (TIX) balance for any wallet. Used by attendees to confirm purchases, doormen to validate tickets, and the venue to view ticket distribution.</p>
+
+    <label for="walletAddress">Enter the wallet address to check:</label>
+    <input type="text" id="walletAddress" name="walletAddress" size="50">
+    <br/>
+    <br/>
+
+    <button id="cryptoBalanceButton">Check SETH Balance</button>
+    <button id="tokenBalanceButton">Check Ticket (TIX) Balance</button>
+    <br/>
+    <br/>
+
+    <label id="cryptoBalance"><strong>SETH Balance:</strong></label>
+    <br/>
+    <label id="tokenBalance"><strong>Ticket Balance:</strong></label>
+    <br/>
+    <label id="tokenName"><strong>Token Name:</strong></label>
+    <br/>
+    <label id="tokenSymbol"><strong>Token Symbol:</strong></label>
+    <br/>
+    <label id="tokenTotalSupply"><strong>Total Tickets Issued:</strong></label>
+    <br/>
+    <label id="ticketsAvailable"><strong>Tickets Available:</strong></label>
+    <br/>
+
+    <!-- Error Modal -->
+    <div id="errorModal" class="modal">
+        <div class="modal-content">
+            <span id="closeModal" class="close">&times;</span>
+            <p id="errorMessage"></p>
+        </div>
+    </div>
+</body>
+
+<script>
+    // create a new web3 instance connected to the Sepolia test network
+    const web3 = new Web3("https://ethereum-sepolia-rpc.publicnode.com");
+
+    // Address of our deployed TicketToken contract — replace after deployment
+    const CONTRACT_ADDRESS = "0x70C279223e5733C3Fd32BC1064560BEDAAbB9fE7";
+
+    // Check the native SETH balance
+    $("#cryptoBalanceButton").click(function() {
+        const walletAddress = $("#walletAddress").val();
+        if (web3.utils.isAddress(walletAddress)) {
+            web3.eth.getBalance(walletAddress).then(function(balance) {
+                const balanceInEther = web3.utils.fromWei(balance, "ether");
+                $("#cryptoBalance").html("<strong>SETH Balance: " + balanceInEther + " SETH</strong>");
+            });
+        } else {
+            $("#errorMessage").text("Invalid wallet address");
+            $("#errorModal").css("display", "block");
+        }
+    });
+
+    // Check the ticket token balance for the wallet
+    $("#tokenBalanceButton").click(function() {
+        const walletAddress = $("#walletAddress").val();
+        if (web3.utils.isAddress(walletAddress)) {
+            const contract = new web3.eth.Contract(ABI, CONTRACT_ADDRESS);
+
+            contract.methods.balanceOf(walletAddress).call().then(function(balance) {
+                $("#tokenBalance").html("<strong>Ticket Balance: " + balance + " TIX</strong>");
+            });
+
+            contract.methods.name().call().then(function(name) {
+                $("#tokenName").html("<strong>Token Name: " + name + "</strong>");
+            });
+
+            contract.methods.symbol().call().then(function(symbol) {
+                $("#tokenSymbol").html("<strong>Token Symbol: " + symbol + "</strong>");
+            });
+
+            contract.methods.totalSupply().call().then(function(totalSupply) {
+                $("#tokenTotalSupply").html("<strong>Total Tickets Issued: " + totalSupply + "</strong>");
+            });
+
+            contract.methods.getAvailableTickets().call().then(function(available) {
+                $("#ticketsAvailable").html("<strong>Tickets Available: " + available + "</strong>");
+            });
+
+        } else {
+            $("#errorMessage").text("Invalid wallet address");
+            $("#errorModal").css("display", "block");
+        }
+    });
+
+    // Close the modal
+    $("#closeModal").click(function() {
+        $("#errorModal").css("display", "none");
+    });
+
+    // ABI for TicketToken contract
+    const ABI = [
+        { "inputs": [{"internalType":"uint256","name":"initialSupply","type":"uint256"},{"internalType":"uint256","name":"_ticketPrice","type":"uint256"}], "stateMutability":"nonpayable","type":"constructor" },
+        { "anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"spender","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Approval","type":"event" },
+        { "anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"buyer","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"paid","type":"uint256"}],"name":"TicketPurchased","type":"event" },
+        { "anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"TicketReturned","type":"event" },
+        { "anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Transfer","type":"event" },
+        { "anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"vendor","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"Withdrawn","type":"event" },
+        { "inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"spender","type":"address"}],"name":"allowance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function" },
+        { "inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"approve","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function" },
+        { "inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function" },
+        { "inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"buyTicket","outputs":[],"stateMutability":"payable","type":"function" },
+        { "inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function" },
+        { "inputs":[],"name":"getAvailableTickets","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function" },
+        { "inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function" },
+        { "inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"returnTicket","outputs":[],"stateMutability":"nonpayable","type":"function" },
+        { "inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function" },
+        { "inputs":[],"name":"ticketPrice","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function" },
+        { "inputs":[],"name":"totalSupply","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function" },
+        { "inputs":[{"internalType":"address","name":"recipient","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"transfer","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function" },
+        { "inputs":[{"internalType":"address","name":"sender","type":"address"},{"internalType":"address","name":"recipient","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"transferFrom","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function" },
+        { "inputs":[],"name":"vendor","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function" },
+        { "inputs":[],"name":"withdraw","outputs":[],"stateMutability":"nonpayable","type":"function" }
+    ];
+</script>
+</html>

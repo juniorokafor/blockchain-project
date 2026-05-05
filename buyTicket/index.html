@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Include the Web3 library -->
+    <script src="https://cdn.jsdelivr.net/gh/ethereum/web3.js/dist/web3.min.js"></script>
+    <!-- Include the jQuery library -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <!-- Include your CSS file -->
+    <link rel="stylesheet" href="./buyTicket.css">
+    <title>Buy a Ticket</title>
+</head>
+<body>
+    <p><a href="../index.html">&larr; Home</a></p>
+
+    <h1>Buy a Ticket</h1>
+    <p>Load your encrypted wallet, then buy a ticket by sending SETH to the contract.</p>
+
+    <!-- Load wallet section -->
+    <h3>Step 1: Load Your Wallet</h3>
+    <button id="loadWalletButton">Load Wallet</button>
+    <input type="password" id="password" placeholder="Enter your wallet password">
+    <input type="file" id="keystoreFile" accept=".json">
+    <br/>
+    <br/>
+
+    <label for="walletAddress">Wallet Address:</label>
+    <br/>
+    <textarea id="walletAddress" rows="2" cols="70"></textarea>
+    <br/>
+    <label for="privateKey">Private Key:</label>
+    <br/>
+    <textarea id="privateKey" rows="2" cols="70"></textarea>
+    <br/>
+    <br/>
+
+    <!-- Buy ticket section -->
+    <h3>Step 2: Buy Ticket(s)</h3>
+    <p>
+        Contract: <span id="contractAddressDisplay"></span>
+        <br/>
+        Price per Ticket: <span id="ticketPriceDisplay">Loading...</span>
+        <br/>
+        Tickets Available: <span id="availableTicketsDisplay">Loading...</span>
+    </p>
+    <input type="number" id="amount" placeholder="Number of tickets" min="1" value="1">
+    <button id="buyTicketButton">Buy Ticket(s)</button>
+    <br/>
+    <br/>
+
+    <label for="transactionRequest">Transaction Request:</label>
+    <br/>
+    <textarea id="transactionRequest" rows="5" cols="70"></textarea>
+    <br/>
+    <label for="transactionResult">Transaction Result:</label>
+    <br/>
+    <textarea id="transactionResult" rows="8" cols="70"></textarea>
+
+    <!-- Error/Status Modal -->
+    <div id="errorModal" class="modal">
+        <div class="modal-content">
+            <span id="closeModal" class="close">&times;</span>
+            <p id="errorMessage"></p>
+        </div>
+    </div>
+</body>
+
+<script>
+    // create a new web3 instance connected to Sepolia
+    const web3 = new Web3("https://ethereum-sepolia-rpc.publicnode.com");
+
+    // Address of our deployed TicketToken contract — replace after deployment
+    const CONTRACT_ADDRESS = "0x70C279223e5733C3Fd32BC1064560BEDAAbB9fE7";
+
+    // Show contract address on page
+    $("#contractAddressDisplay").html('<a href="https://sepolia.etherscan.io/address/' + CONTRACT_ADDRESS + '" target="_blank">' + CONTRACT_ADDRESS + '</a>');
+
+    // Load ticket price and availability on page load
+    $(document).ready(function() {
+        const contract = new web3.eth.Contract(ABI, CONTRACT_ADDRESS);
+
+        contract.methods.ticketPrice().call().then(function(price) {
+            const priceEth = web3.utils.fromWei(price, "ether");
+            $("#ticketPriceDisplay").text(priceEth + " SETH (" + price + " wei)");
+        }).catch(function(err) {
+            $("#ticketPriceDisplay").text("Error loading price — check contract address.");
+        });
+
+        contract.methods.getAvailableTickets().call().then(function(available) {
+            $("#availableTicketsDisplay").text(available + " TIX");
+        });
+    });
+
+    // Step 1: Load wallet by decrypting keystore
+    $("#loadWalletButton").click(function() {
+        if ($("#password").val() == "") {
+            $("#errorMessage").text("Please enter a password");
+            $("#errorModal").css("display", "block");
+            return;
+        }
+
+        var file = $("#keystoreFile")[0].files[0];
+        if (!file) {
+            $("#errorMessage").text("Please select a keystore file");
+            $("#errorModal").css("display", "block");
+            return;
+        }
+
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            var keystore = e.target.result;
+            var password = $("#password").val();
+            try {
+                var wallet = web3.eth.accounts.decrypt(keystore, password);
+                $("#walletAddress").val(wallet.address);
+                $("#privateKey").val(wallet.privateKey);
+            } catch (error) {
+                $("#errorMessage").text(error.message);
+                $("#errorModal").css("display", "block");
+            }
+        };
+        reader.readAsText(file);
+    });
+
+    // Step 2: Buy ticket using the loaded private key
+    $("#buyTicketButton").click(function() {
+        var privateKey = $("#privateKey").val();
+        var amount = parseInt($("#amount").val(), 10);
+
+        if (privateKey == "") {
+            $("#errorMessage").text("Please load your wallet first");
+            $("#errorModal").css("display", "block");
+            return;
+        }
+        if (!amount || amount < 1) {
+            $("#errorMessage").text("Please enter a valid ticket amount");
+            $("#errorModal").css("display", "block");
+            return;
+        }
+
+        var wallet = web3.eth.accounts.privateKeyToAccount(privateKey);
+        var contract = new web3.eth.Contract(ABI, CONTRACT_ADDRESS);
+
+        // Get the ticket price first, then build the transaction
+        contract.methods.ticketPrice().call().then(function(price) {
+            var totalWei = (BigInt(price) * BigInt(amount)).toString();
+
+            var transaction = contract.methods.buyTicket(amount);
+            var encodedABI = transaction.encodeABI();
+
+            var tx = {
+                from: wallet.address,
+                to: CONTRACT_ADDRESS,
+                gas: 200000,
+                chainId: 11155111,
+                data: encodedABI,
+                value: totalWei
+            };
+
+            $("#errorMessage").text("Transaction in progress. This could take 30s.");
+            $("#errorModal").css("display", "block");
+
+            web3.eth.accounts.signTransaction(tx, privateKey).then(function(signedTx) {
+                web3.eth.sendSignedTransaction(signedTx.rawTransaction).on('receipt', function(receipt) {
+                    $("#transactionRequest").val(JSON.stringify(tx, null, 2));
+                    $("#transactionResult").val(JSON.stringify(receipt, null, 2));
+                    $("#errorMessage").html("Ticket(s) purchased! <br/><a href='https://sepolia.etherscan.io/tx/" + receipt.transactionHash + "' target='_blank'>View on Etherscan</a>");
+                }).on('error', function(error) {
+                    $("#errorMessage").text("Transaction failed: " + error.message);
+                });
+            }).catch(function(error) {
+                $("#errorMessage").text("Signing failed: " + error.message);
+            });
+        });
+    });
+
+    // Close the modal
+    $("#closeModal").click(function() {
+        $("#errorModal").css("display", "none");
+    });
+
+    // ABI for TicketToken contract
+    const ABI = [
+        { "inputs": [{"internalType":"uint256","name":"initialSupply","type":"uint256"},{"internalType":"uint256","name":"_ticketPrice","type":"uint256"}], "stateMutability":"nonpayable","type":"constructor" },
+        { "anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"spender","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Approval","type":"event" },
+        { "anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"buyer","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"paid","type":"uint256"}],"name":"TicketPurchased","type":"event" },
+        { "anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"TicketReturned","type":"event" },
+        { "anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Transfer","type":"event" },
+        { "anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"vendor","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"Withdrawn","type":"event" },
+        { "inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"spender","type":"address"}],"name":"allowance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function" },
+        { "inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"approve","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function" },
+        { "inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function" },
+        { "inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"buyTicket","outputs":[],"stateMutability":"payable","type":"function" },
+        { "inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function" },
+        { "inputs":[],"name":"getAvailableTickets","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function" },
+        { "inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function" },
+        { "inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"returnTicket","outputs":[],"stateMutability":"nonpayable","type":"function" },
+        { "inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function" },
+        { "inputs":[],"name":"ticketPrice","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function" },
+        { "inputs":[],"name":"totalSupply","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function" },
+        { "inputs":[{"internalType":"address","name":"recipient","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"transfer","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function" },
+        { "inputs":[{"internalType":"address","name":"sender","type":"address"},{"internalType":"address","name":"recipient","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"transferFrom","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function" },
+        { "inputs":[],"name":"vendor","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function" },
+        { "inputs":[],"name":"withdraw","outputs":[],"stateMutability":"nonpayable","type":"function" }
+    ];
+</script>
+</html>
