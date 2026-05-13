@@ -102,7 +102,7 @@ contract TicketToken is IERC20 {
     // Exact-match payment prevents accidental overpayment; the contract has no refund path for excess ETH.
     function buyTicket(uint256 amount) external payable {
         require(amount > 0, "Must buy at least one ticket");
-        require(msg.value == ticketPrice * amount, "Send exact ticket price — no overpayments accepted");
+        require(msg.value == ticketPrice * amount, "Send exact ticket price - no overpayments accepted");
         require(_balances[vendor] >= amount, "Not enough tickets available");
         _transfer(vendor, msg.sender, amount);
         emit TicketPurchased(msg.sender, amount, msg.value);

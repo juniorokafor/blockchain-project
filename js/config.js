@@ -3,7 +3,7 @@
 // Update CONTRACT_ADDRESS here after every redeployment — nowhere else.
 // ============================================================================
 
-const CONTRACT_ADDRESS = "0x16E7E596DCcc75C6112b90F5CF7d9640fcb0C66e";
+const CONTRACT_ADDRESS = "0xa3cD2cFAd8B9bb79F2F3647A9022004Bc8dfbA22";
 
 const ABI = [
     { "inputs": [{"internalType":"uint256","name":"initialSupply","type":"uint256"},{"internalType":"uint256","name":"_ticketPrice","type":"uint256"}], "stateMutability":"nonpayable","type":"constructor" },
