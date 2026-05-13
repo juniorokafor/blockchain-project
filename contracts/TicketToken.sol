@@ -24,7 +24,8 @@ contract TicketToken is IERC20 {
     address public vendor;
     uint256 public ticketPrice; // price per ticket in wei
 
-    // Reentrancy guard — locked during any ETH-transferring call
+    // Mutex that blocks re-entry into any function marked nonReentrant.
+    // Set before the body runs, cleared after — an attacker calling back mid-execution hits the require.
     bool private _locked;
 
     modifier nonReentrant() {
@@ -98,6 +99,7 @@ contract TicketToken is IERC20 {
 
     // -------- Ticket-specific functions --------
 
+    // Exact-match payment prevents accidental overpayment; the contract has no refund path for excess ETH.
     function buyTicket(uint256 amount) external payable {
         require(amount > 0, "Must buy at least one ticket");
         require(msg.value == ticketPrice * amount, "Send exact ticket price — no overpayments accepted");
@@ -106,6 +108,9 @@ contract TicketToken is IERC20 {
         emit TicketPurchased(msg.sender, amount, msg.value);
     }
 
+    // Tokens are transferred to vendor BEFORE the ETH refund (checks-effects-interactions).
+    // This means a reentering caller would fail the balance check on a second call.
+    // nonReentrant adds a second layer of defence regardless.
     function returnTicket(uint256 amount) external nonReentrant {
         require(amount > 0, "Must return at least one ticket");
         require(_balances[msg.sender] >= amount, "Not enough tickets to return");
@@ -115,6 +120,8 @@ contract TicketToken is IERC20 {
         emit TicketReturned(msg.sender, amount);
     }
 
+    // `outstanding` = ETH that must be kept in reserve to honour all outstanding refunds.
+    // Only the surplus above that reserve can be withdrawn, so ticket holders can always return.
     function withdraw() external nonReentrant {
         require(msg.sender == vendor, "Only vendor can withdraw");
         uint256 outstanding = (_totalSupply - _balances[vendor]) * ticketPrice;

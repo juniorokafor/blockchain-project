@@ -29,5 +29,6 @@ const ABI = [
     { "inputs":[],"name":"withdraw","outputs":[],"stateMutability":"nonpayable","type":"function" }
 ];
 
+// Public read-only RPC — no API key required, suitable for read calls and sending signed transactions.
 const web3 = new Web3("https://ethereum-sepolia-rpc.publicnode.com");
 const contract = new web3.eth.Contract(ABI, CONTRACT_ADDRESS);

@@ -137,6 +137,7 @@
 
         // Get the ticket price first, then build the transaction
         contract.methods.ticketPrice().call().then(function(price) {
+            // BigInt prevents floating-point loss when multiplying large wei values.
             var totalWei = (BigInt(price) * BigInt(amount)).toString();
 
             var transaction = contract.methods.buyTicket(amount);
@@ -146,7 +147,7 @@
                 from: wallet.address,
                 to: CONTRACT_ADDRESS,
                 gas: 200000,
-                chainId: 11155111,
+                chainId: 11155111, // Sepolia testnet chain ID — prevents replay on other networks.
                 data: encodedABI,
                 value: totalWei
             };

@@ -60,18 +60,15 @@
                 $("#errorModal").css("display", "block");
                 return;
             }
-            // Create a new Web3 instance
+            // Standalone Web3 instance — no RPC needed here, only used for local crypto operations.
             var web3 = new Web3();
 
-            // Create a new wallet
             var wallet = web3.eth.accounts.create();
-            // wallet address into the text area
             $("#walletAddress").val(wallet.address);
-
-            // Display the private key
             $("#privateKey").val(wallet.privateKey);
 
-            // Encrypt the private key into a V3 keystore
+            // V3 keystore: private key is AES-128-CTR encrypted with the password via scrypt KDF.
+            // The JSON file is safe to store — without the password it cannot be decrypted.
             var keystore = web3.eth.accounts.encrypt(wallet.privateKey, password);
             $("#keystore").val(JSON.stringify(keystore));
         });
@@ -89,6 +86,7 @@
         saveAs(blob, wallet + ".json");
     });
 
+    // Triggers a browser download without any server — creates a temporary object URL, clicks it, done.
     function saveAs(blob, filename) {
         var url = URL.createObjectURL(blob);
         var a = document.createElement("a");

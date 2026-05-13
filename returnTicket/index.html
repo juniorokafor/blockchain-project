@@ -121,8 +121,9 @@
             from: wallet.address,
             to: CONTRACT_ADDRESS,
             gas: 100000,
-            chainId: 11155111,
+            chainId: 11155111, // Sepolia testnet chain ID — prevents replay on other networks.
             data: encodedABI
+            // No `value` field — the ETH refund is sent back by the contract, not paid by the caller.
         };
 
         $("#errorMessage").text("Transaction in progress. This could take 30s.");
