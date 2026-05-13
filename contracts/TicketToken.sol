@@ -24,6 +24,16 @@ contract TicketToken is IERC20 {
     address public vendor;
     uint256 public ticketPrice; // price per ticket in wei
 
+    // Reentrancy guard — locked during any ETH-transferring call
+    bool private _locked;
+
+    modifier nonReentrant() {
+        require(!_locked, "Reentrant call");
+        _locked = true;
+        _;
+        _locked = false;
+    }
+
     event TicketPurchased(address indexed buyer, uint256 amount, uint256 paid);
     event TicketReturned(address indexed from, uint256 amount);
     event Withdrawn(address indexed vendor, uint256 amount);
@@ -96,7 +106,7 @@ contract TicketToken is IERC20 {
         emit TicketPurchased(msg.sender, amount, msg.value);
     }
 
-    function returnTicket(uint256 amount) external {
+    function returnTicket(uint256 amount) external nonReentrant {
         require(amount > 0, "Must return at least one ticket");
         require(_balances[msg.sender] >= amount, "Not enough tickets to return");
         _transfer(msg.sender, vendor, amount);
@@ -105,7 +115,7 @@ contract TicketToken is IERC20 {
         emit TicketReturned(msg.sender, amount);
     }
 
-    function withdraw() external {
+    function withdraw() external nonReentrant {
         require(msg.sender == vendor, "Only vendor can withdraw");
         uint256 amount = address(this).balance;
         (bool success, ) = payable(vendor).call{value: amount}("");
