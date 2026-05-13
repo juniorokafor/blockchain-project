@@ -100,7 +100,7 @@ contract TicketToken is IERC20 {
 
     function buyTicket(uint256 amount) external payable {
         require(amount > 0, "Must buy at least one ticket");
-        require(msg.value >= ticketPrice * amount, "Not enough SETH sent; check price!");
+        require(msg.value == ticketPrice * amount, "Send exact ticket price — no overpayments accepted");
         require(_balances[vendor] >= amount, "Not enough tickets available");
         _transfer(vendor, msg.sender, amount);
         emit TicketPurchased(msg.sender, amount, msg.value);
@@ -117,10 +117,12 @@ contract TicketToken is IERC20 {
 
     function withdraw() external nonReentrant {
         require(msg.sender == vendor, "Only vendor can withdraw");
-        uint256 amount = address(this).balance;
-        (bool success, ) = payable(vendor).call{value: amount}("");
+        uint256 outstanding = (_totalSupply - _balances[vendor]) * ticketPrice;
+        require(address(this).balance > outstanding, "No profit to withdraw");
+        uint256 profit = address(this).balance - outstanding;
+        (bool success, ) = payable(vendor).call{value: profit}("");
         require(success, "Withdraw failed");
-        emit Withdrawn(vendor, amount);
+        emit Withdrawn(vendor, profit);
     }
 
     function getAvailableTickets() external view returns (uint256) {
