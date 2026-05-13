@@ -117,10 +117,12 @@ contract TicketToken is IERC20 {
 
     function withdraw() external nonReentrant {
         require(msg.sender == vendor, "Only vendor can withdraw");
-        uint256 amount = address(this).balance;
-        (bool success, ) = payable(vendor).call{value: amount}("");
+        uint256 outstanding = (_totalSupply - _balances[vendor]) * ticketPrice;
+        require(address(this).balance > outstanding, "No profit to withdraw");
+        uint256 profit = address(this).balance - outstanding;
+        (bool success, ) = payable(vendor).call{value: profit}("");
         require(success, "Withdraw failed");
-        emit Withdrawn(vendor, amount);
+        emit Withdrawn(vendor, profit);
     }
 
     function getAvailableTickets() external view returns (uint256) {

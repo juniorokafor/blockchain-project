@@ -74,7 +74,6 @@
 
     // Load ticket price and availability on page load
     $(document).ready(function() {
-
         contract.methods.ticketPrice().call().then(function(price) {
             const priceEth = web3.utils.fromWei(price, "ether");
             $("#ticketPriceDisplay").text(priceEth + " SETH (" + price + " wei)");
