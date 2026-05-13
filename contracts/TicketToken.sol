@@ -100,7 +100,7 @@ contract TicketToken is IERC20 {
 
     function buyTicket(uint256 amount) external payable {
         require(amount > 0, "Must buy at least one ticket");
-        require(msg.value >= ticketPrice * amount, "Not enough SETH sent; check price!");
+        require(msg.value == ticketPrice * amount, "Send exact ticket price — no overpayments accepted");
         require(_balances[vendor] >= amount, "Not enough tickets available");
         _transfer(vendor, msg.sender, amount);
         emit TicketPurchased(msg.sender, amount, msg.value);
