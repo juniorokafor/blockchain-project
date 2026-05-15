@@ -66,6 +66,12 @@ In VS Code:
 4. **Check balance** — go to Check Balance, paste any address (the doorman would do this at the door).
 5. **Return ticket** — go to Return Ticket, load wallet, transfer back to vendor.
 
+## Deployed Contract
+
+- **Network:** Sepolia testnet
+- **Contract address:** [`0xa3cD2cFAd8B9bb79F2F3647A9022004Bc8dfbA22`](https://sepolia.etherscan.io/address/0xa3cD2cFAd8B9bb79F2F3647A9022004Bc8dfbA22)
+- **Vendor / deployer wallet:** [`0x7EE9703D8dbE86E78BAf4FF8a6C73F68f5848EBa`](https://sepolia.etherscan.io/address/0x7EE9703D8dbE86E78BAf4FF8a6C73F68f5848EBa)
+
 ## Network
 
 - Network: Sepolia testnet
