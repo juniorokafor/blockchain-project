@@ -4,27 +4,6 @@ A decentralised ticketing system built on the Ethereum Sepolia testnet, using an
 
 This project follows the same structural and stylistic patterns as the lecturer's `web3examples` repository — each feature lives in its own folder with its own `index.html` and CSS, using jQuery and `web3.js` loaded from CDN.
 
-## Project Structure
-
-```
-ticketing-dapp/
-├── contracts/
-│   └── TicketToken.sol         # ERC-20 contract with buy/return ticket logic
-├── createWallet/               # Generate encrypted V3 keystore
-│   ├── index.html
-│   └── createWallet.css
-├── checkBalance/               # Check SETH and TIX balance for any wallet
-│   ├── index.html
-│   └── checkBalance.css
-├── buyTicket/                  # Load wallet, then buy ticket(s)
-│   ├── index.html
-│   └── buyTicket.css
-├── returnTicket/               # Load wallet, then return ticket(s)
-│   ├── index.html
-│   └── returnTicket.css
-├── index.html                  # Landing page with nav
-└── README.md
-```
 
 ## Setup
 
@@ -43,11 +22,7 @@ ticketing-dapp/
 
 ### 2. Configure the frontend
 
-Open `js/config.js` and replace `CONTRACT_ADDRESS` with your deployed contract address:
-
-```js
-const CONTRACT_ADDRESS = "0x0000000000000000000000000000000000000000";
-```
+Open `js/config.js` and replace `CONTRACT_ADDRESS` with your deployed contract address
 
 This is the single source of truth — all pages import from this file, so you only need to change it in one place.
 
