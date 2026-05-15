@@ -43,16 +43,13 @@ ticketing-dapp/
 
 ### 2. Configure the frontend
 
-Open each of these files and replace `CONTRACT_ADDRESS` with your deployed contract address:
+Open `js/config.js` and replace `CONTRACT_ADDRESS` with your deployed contract address:
 
-- `checkBalance/index.html`
-- `buyTicket/index.html`
-- `returnTicket/index.html`
-
-Look for the line:
 ```js
 const CONTRACT_ADDRESS = "0x0000000000000000000000000000000000000000";
 ```
+
+This is the single source of truth — all pages import from this file, so you only need to change it in one place.
 
 ### 3. Run the frontend
 
@@ -72,5 +69,5 @@ In VS Code:
 ## Network
 
 - Network: Sepolia testnet
-- RPC: `https://rpc.sepolia.org`
+- RPC: `https://ethereum-sepolia-rpc.publicnode.com`
 - Block explorer: `https://sepolia.etherscan.io`
